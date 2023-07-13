@@ -1,9 +1,13 @@
 const express = require('express');
 const app = express();
+const dotenv = require('dotenv')
+const PORT = process.env.PORT || 8086
 const mongoose = require('mongoose');
 mongoose.set('strictQuery', true);
 var routes = require('./routes/routes');
 const cors = require('cors');
+
+dotenv.config()
 
 app.use(cors(
     {
@@ -11,24 +15,16 @@ app.use(cors(
     }
    
   ));
-  const DB= 'mongodb+srv://mayank:newwork@estimatesdb.xb3xbag.mongodb.net/logist?retryWrites=true&w=majority';
-  mongoose.connect(DB).then(()=>{
+ 
+  mongoose.connect(process.env.MONGO_URL).then(()=>{
     console.log("Connection Successful")
 }).catch((err)=>console.log(err));
 
 
 
-app.listen(8086,function port(error)
-{
-    if(error)
-    {
-        console.log(error)
-    }
-    else
-    {
-        console.log("Port  Connectedddd!!!!!!!!!!! 8086")
-    }
-});
+app.listen(PORT, () => {
+  console.log(`Server Running on Port ${PORT}`)
+})
 
 app.use(express.json());
 
