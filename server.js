@@ -8,15 +8,20 @@ var routes = require('./routes/routes');
 const cors = require('cors');
 
 dotenv.config()
+const allowedOrigins = ['https://daakgadi.web.app']; // Add your Firebase Hosting URL here
 
-app.use(cors(
-    {
-      origin: "http://localhost:4200"
-    }
-   
-  ));
- 
-  mongoose.connect(process.env.MONGO_URL).then(()=>{
+// CORS configuration
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+  })
+);  mongoose.connect(process.env.MONGO_URL).then(()=>{
     console.log("Connection Successful")
 }).catch((err)=>console.log(err));
 
