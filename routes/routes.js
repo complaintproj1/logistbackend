@@ -31,7 +31,7 @@ router.post("/register", async (req, res) => {
     });
 
     res.send({
-      message: "success",
+      message: "user registered successfully",
     });
   }
 });
@@ -59,7 +59,7 @@ router.post("/login", async (req, res) => {
   });
 
   res.send({
-    message: "success",
+    message: "user logined successfully",
   });
 });
 
@@ -91,7 +91,7 @@ router.post("/logout", (req, res) => {
   res.cookie("jwt", "", { maxAge: 0 });
 
   res.send({
-    message: "success",
+    message: "user logout succssfully",
   });
 });
 
