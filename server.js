@@ -19,8 +19,8 @@ const app = express()
 
 
 app.use(cors({
-    origin: 'http://localhost:4200',
-    //origin: 'https://daakgadi.web.app',
+//origin: 'http://localhost:4200',
+    origin: 'https://daakgadi.web.app',
    
     credentials: true,
   }));
