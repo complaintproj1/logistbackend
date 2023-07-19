@@ -2,6 +2,20 @@ const router = require("express").Router();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
+const Estimate = require("../models/estimate");
+
+router.post('/todos', (req, res) => {
+  const todo = new Estimate(req.body);
+  todo.save()
+    .then(() => {
+      res.status(201).json(todo);
+    })
+    .catch((error) => {
+      console.error('Error saving todo:', error); // Log the error for debugging purposes
+      res.status(400).json({ error: 'Failed to create todo' });
+    });
+});
+
 
 router.post("/register", async (req, res) => {
   const salt = await bcrypt.genSalt(10);
@@ -63,6 +77,7 @@ router.post("/login", async (req, res) => {
   });
 });
 
+
 router.get("/user", async (req, res) => {
   try {
     const cookie = req.cookies["jwt"];
@@ -74,6 +89,7 @@ router.get("/user", async (req, res) => {
         message: "unauthenticated",
       });
     }
+
 
     const user = await User.findOne({ _id: claims._id });
 
