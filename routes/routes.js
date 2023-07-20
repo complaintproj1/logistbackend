@@ -3,6 +3,70 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const Estimate = require("../models/estimate");
+const Invoice = require("../models/invoice");
+
+router.post('/invoices', async (req, res) => {
+  const invoiceData = req.body;
+  const newInvoice = new Invoice(invoiceData);
+
+  try {
+    const savedInvoice = await newInvoice.save();
+    res.status(200).json(savedInvoice);
+  } catch (err) {
+    res.status(500).json({ error: 'Error saving invoice data to database.' });
+  }
+});
+
+const isAuthenticated = (req, res, next) => {
+  const token = req.cookies["jwt"];
+
+  if (!token) {
+    return res.status(401).send({
+      message: "unauthenticated",
+    });
+  }
+
+  jwt.verify(token, "secret", async (err, claims) => {
+    if (err) {
+      return res.status(401).send({
+        message: "unauthenticated",
+      });
+    }
+
+    const user = await User.findOne({ _id: claims._id });
+
+    if (!user) {
+      return res.status(401).send({
+        message: "unauthenticated",
+      });
+    }
+
+    req.user = user;
+    next();
+  });
+};
+
+// Endpoint to get invoices for the logged-in user
+router.get('/invoices/:customerName', isAuthenticated, async (req, res) => {
+  const customerName = req.params.customerName.toLowerCase(); // Retrieve the customerName parameter from the URL in lowercase
+
+  // Check if the customerName in the URL matches the authenticated user's customerName
+  if (customerName !== req.user.name.toLowerCase()) {
+    return res.status(403).send({
+      message: "You are not authorized to access this invoice.",
+    });
+  }
+
+  try {
+    const invoices = await Invoice.find({ customerName }); // Retrieve invoices for the specified customerName
+    res.json(invoices);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error retrieving invoice data.' });
+  }
+});
+
+
 
 router.post('/todos', (req, res) => {
   const todo = new Estimate(req.body);
@@ -65,6 +129,17 @@ router.post("/login", async (req, res) => {
     });
   }
 
+  router.get('/api/invoices/:customerName', async (req, res) => {
+    const customerName = req.params.customerName.toLowerCase(); // Retrieve the customerName parameter from the URL in lowercase
+  
+    try {
+      const invoices = await Invoice.find({ customerName }); // Retrieve invoices for the specified customerName
+      res.json(invoices);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Error retrieving invoice data.' });
+    }
+  });
   const token = jwt.sign({ _id: user._id }, "secret");
 
   res.cookie("jwt", token, {

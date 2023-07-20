@@ -4,6 +4,7 @@ const dotenv = require('dotenv')
 const PORT = process.env.PORT || 8000
 const mongoose = require('mongoose');
 mongoose.set('strictQuery', true);
+const nodemailer = require('nodemailer');
 
 const routes = require('./routes/routes')
 
