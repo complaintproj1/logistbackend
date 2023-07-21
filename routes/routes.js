@@ -4,6 +4,64 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const Estimate = require("../models/estimate");
 const Invoice = require("../models/invoice");
+const nodemailer = require('nodemailer')
+
+const multer = require('multer')
+
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
+  },
+});
+
+const upload = multer({ storage }).single('attachment');
+
+const transporter = nodemailer.createTransport({
+    service:'gmail',
+    auth:{
+       user:'981mayankchauhan@gmail.com',
+       pass:'sfpuruhushrvjvaj'
+    }
+});
+
+router.post('/send-email', (req, res) => {
+  upload(req, res, (err) => {
+    if (err) {
+      console.log('Error uploading file:', err);
+      return res.status(500).send('Error uploading file.');
+    }
+
+    const { to, subject, text } = req.body;
+    const attachment = req.file;
+
+    if (!to || !subject || !text || !attachment) {
+      return res.status(400).send('Please provide all required fields.');
+    }
+
+    const mailOptions = {
+      from: '981mayankchauhan@gmail.com', // Replace with your email address
+      to,
+      subject,
+      text,
+      attachments: [{ filename: attachment.originalname, path: attachment.path }],
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log('Error sending email:', error);
+        return res.status(500).send('Error sending email.');
+      }
+
+      console.log('Email sent:', info.response);
+      return res.status(200).send('Email sent successfully.');
+    });
+  });
+});
+
 
 router.post('/invoices', async (req, res) => {
   const invoiceData = req.body;
@@ -11,62 +69,38 @@ router.post('/invoices', async (req, res) => {
 
   try {
     const savedInvoice = await newInvoice.save();
+    console.log('Invoice saved successfully:', savedInvoice);
     res.status(200).json(savedInvoice);
   } catch (err) {
+    console.error('Error saving invoice data to database:', err);
     res.status(500).json({ error: 'Error saving invoice data to database.' });
   }
 });
 
-const isAuthenticated = (req, res, next) => {
-  const token = req.cookies["jwt"];
 
-  if (!token) {
-    return res.status(401).send({
-      message: "unauthenticated",
-    });
-  }
-
-  jwt.verify(token, "secret", async (err, claims) => {
-    if (err) {
-      return res.status(401).send({
-        message: "unauthenticated",
-      });
-    }
-
-    const user = await User.findOne({ _id: claims._id });
-
-    if (!user) {
-      return res.status(401).send({
-        message: "unauthenticated",
-      });
-    }
-
-    req.user = user;
-    next();
-  });
-};
-
-// Endpoint to get invoices for the logged-in user
-router.get('/invoices/:customerName', isAuthenticated, async (req, res) => {
-  const customerName = req.params.customerName.toLowerCase(); // Retrieve the customerName parameter from the URL in lowercase
-
-  // Check if the customerName in the URL matches the authenticated user's customerName
-  if (customerName !== req.user.name.toLowerCase()) {
-    return res.status(403).send({
-      message: "You are not authorized to access this invoice.",
-    });
-  }
+router.put('/invoices/:id/status', async (req, res) => {
+  const invoiceId = req.params.id;
 
   try {
-    const invoices = await Invoice.find({ customerName }); // Retrieve invoices for the specified customerName
-    res.json(invoices);
+    const updatedInvoice = await Invoice.findByIdAndUpdate(
+      invoiceId,
+      { status: 'done' },
+      { new: true }
+    );
+    res.status(200).json(updatedInvoice);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Error retrieving invoice data.' });
+    res.status(500).json({ error: 'Error updating invoice status.' });
   }
 });
 
-
+router.get('/invoices', async (req, res) => {
+  try {
+    const invoices = await Invoice.find(); // Retrieve all invoices from the database
+    res.status(200).json(invoices);
+  } catch (err) {
+    res.status(500).json({ error: 'Error fetching invoices from the database.' });
+  }
+});
 
 router.post('/todos', (req, res) => {
   const todo = new Estimate(req.body);
@@ -129,17 +163,6 @@ router.post("/login", async (req, res) => {
     });
   }
 
-  router.get('/api/invoices/:customerName', async (req, res) => {
-    const customerName = req.params.customerName.toLowerCase(); // Retrieve the customerName parameter from the URL in lowercase
-  
-    try {
-      const invoices = await Invoice.find({ customerName }); // Retrieve invoices for the specified customerName
-      res.json(invoices);
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: 'Error retrieving invoice data.' });
-    }
-  });
   const token = jwt.sign({ _id: user._id }, "secret");
 
   res.cookie("jwt", token, {

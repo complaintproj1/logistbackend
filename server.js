@@ -1,10 +1,10 @@
 const express = require('express')
 
+
 const dotenv = require('dotenv')
 const PORT = process.env.PORT || 8000
 const mongoose = require('mongoose');
 mongoose.set('strictQuery', true);
-const nodemailer = require('nodemailer');
 
 const routes = require('./routes/routes')
 
@@ -20,8 +20,8 @@ const app = express()
 
 
 app.use(cors({
-//origin: 'http://localhost:4200',
-    origin: 'https://daakgadi.web.app',
+origin: 'http://localhost:4200',
+//    origin: 'https://daakgadi.web.app',
    
     credentials: true,
   }));

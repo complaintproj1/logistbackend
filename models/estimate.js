@@ -2,6 +2,9 @@
 const mongoose = require('mongoose')
 
 const estimateSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+  email: { type: String, required: true },
+  contact: { type: String, required: true },
     length: {
         type: Number,
         required: true

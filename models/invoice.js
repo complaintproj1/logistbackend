@@ -32,10 +32,14 @@ const invoiceSchema = new mongoose.Schema({
             required:true
         }
     }],
+    
     additionalDetails: {
         type:String,
-        required:true
-    }
+    },
+    status: {
+        type: String,
+        default: 'pending', // Default status is 'pending', but it will be updated to 'done' when clicked on the upload button.
+      },
 
 })
 
