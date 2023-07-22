@@ -6,6 +6,8 @@ const Estimate = require("../models/estimate");
 const Invoice = require("../models/invoice");
 const nodemailer = require('nodemailer')
 
+const jwtSecret = process.env.YOUR_JWT_SECRET_KEY;
+
 
 const multer = require('multer')
 
@@ -136,7 +138,7 @@ router.post("/register", async (req, res) => {
 
     const { _id } = await result.toJSON();
 
-    const token = jwt.sign({ _id: _id },jwtSecret );
+    const token = jwt.sign({ _id: _id }, process.env.YOUR_JWT_SECRET_KEY );
 
     res.cookie("jwt", token, {
       httpOnly: true,
@@ -164,7 +166,7 @@ router.post("/login", async (req, res) => {
     });
   }
 
-  const token = jwt.sign({ _id: user._id }, jwtSecret);
+  const token = jwt.sign({ _id: user._id }, process.env.YOUR_JWT_SECRET_KEY);
 
   res.cookie("jwt", token, {
     httpOnly: true,
@@ -180,7 +182,7 @@ router.post("/login", async (req, res) => {
 router.get("/user",async(req,res)=>{
   try {
    const cookie = req.cookies['jwt']
-   const claims = jwt.verify(cookie,jwtSecret)
+   const claims = jwt.verify(cookie,process.env.YOUR_JWT_SECRET_KEY)
 
    if(!claims){
        return res.status(401).send({
