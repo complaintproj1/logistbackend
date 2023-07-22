@@ -20,7 +20,7 @@ const app = express()
 
 
 app.use(cors({
-//origin: 'http://localhost:4200',
+// origin: 'http://localhost:4200',
    origin: 'https://daakgadi.web.app',
    
     credentials: true,

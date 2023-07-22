@@ -176,30 +176,27 @@ router.post("/login", async (req, res) => {
 });
 
 
-router.get("/user", async (req, res) => {
+router.get("/user",async(req,res)=>{
   try {
-    const cookie = req.cookies["jwt"];
+   const cookie = req.cookies['jwt']
+   const claims = jwt.verify(cookie,"secret")
 
-    const claims = jwt.verify(cookie, "secret");
+   if(!claims){
+       return res.status(401).send({
+           message:"unauthorized"
+       })
+   }
+const user = await User.findOne({_id:claims._id})
 
-    if (!claims) {
-      return res.status(401).send({
-        message: "unauthenticated",
-      });
-    }
-
-
-    const user = await User.findOne({ _id: claims._id });
-
-    const { password, ...data } = await user.toJSON();
-
-    res.send(data);
-  } catch (e) {
-    return res.status(401).send({
-      message: "unauthenticated",
-    });
+const {password,...data}=await user.toJSON()
+res.send(data)
+  } catch (error) {
+   return res.status(401).send({
+       message:'unauthenticated'
+   })
+   
   }
-});
+})
 
 router.post("/logout", (req, res) => {
   res.cookie("jwt", "", { maxAge: 0 });
