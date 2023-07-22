@@ -16,7 +16,11 @@ dotenv.config()
 
 const app = express()
 
-
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', 'https://daakgadi.web.app');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  next();
+});
 
 const allowedOrigins = ['https://daakgadi.web.app'];
 const corsOptions = {
