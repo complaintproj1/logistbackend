@@ -3,6 +3,7 @@ const express = require('express')
 
 const dotenv = require('dotenv')
 const PORT = process.env.PORT || 8000
+const jwtSecret = process.env.YOUR_JWT_SECRET_KEY;
 const mongoose = require('mongoose');
 mongoose.set('strictQuery', true);
 
@@ -17,12 +18,12 @@ dotenv.config()
 const app = express()
 
 app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', 'https://daakgadi.web.app');
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   next();
 });
 
-const allowedOrigins = ['https://daakgadi.web.app'];
+const allowedOrigins = ['http://localhost:4200'];
 const corsOptions = {
   origin: function (origin, callback) {
     if (allowedOrigins.includes(origin) || !origin) {
