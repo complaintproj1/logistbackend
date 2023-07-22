@@ -18,13 +18,17 @@ const app = express()
 
 
 
-
-app.use(cors({
- origin: 'http://localhost:4200',
-//   origin: 'https://daakgadi.web.app',
-   
-    credentials: true,
-  }));
+const allowedOrigins = ['https://daakgadi.web.app'];
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (allowedOrigins.includes(origin) || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
+};
+app.use(cors(corsOptions));
 app.use(cookieParser())
 
 app.use(express.json())
