@@ -8,9 +8,8 @@ const nodemailer = require('nodemailer')
 
 const jwtSecret = process.env.YOUR_JWT_SECRET_KEY;
 
-
 const multer = require('multer');
-const { async } = require("rxjs");
+
 
 // Node Mailer setup
 
