@@ -3,7 +3,9 @@ const mongoose = require('mongoose')
 
 const estimateSchema = new mongoose.Schema({
   
-  email: { type: String, required: true },
+  email: { type: String, 
+   
+    required: true },
   contact: { type: String, required: true },
     length: {
         type: Number,
@@ -24,7 +26,11 @@ const estimateSchema = new mongoose.Schema({
     estimateResult:{
         type:Number,
         required:true
-    }
+    },
+    status: {
+        type: String,
+        default: 'Received goods', // Default status is 'pending', but it will be updated to 'done' when clicked on the upload button.
+      },
 
 })
 

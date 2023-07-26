@@ -9,8 +9,10 @@ const nodemailer = require('nodemailer')
 const jwtSecret = process.env.YOUR_JWT_SECRET_KEY;
 
 
-const multer = require('multer')
+const multer = require('multer');
+const { async } = require("rxjs");
 
+// Node Mailer setup
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -30,6 +32,8 @@ const transporter = nodemailer.createTransport({
        pass:'sfpuruhushrvjvaj'
     }
 });
+
+//send email api
 
 router.post('/send-email', (req, res) => {
   upload(req, res, (err) => {
@@ -65,6 +69,122 @@ router.post('/send-email', (req, res) => {
   });
 });
 
+//send email on confirm estimate
+router.post('/estimate', async(req, res) => {
+  try{
+  const { id, email,length, breadth, height, multiplier, estimateResult } = req.body;
+
+  // ... code to handle the estimate data and generate the estimate ID (e.g., using MongoDB) ...
+  // 
+  console.log('Received Estimate Data:', req.body);
+
+
+  // Sample code to send the confirmation email using Nodemailer
+  const transporter = nodemailer.createTransport({
+    service: 'gmail', // Change to the email service you want to use
+    auth:{
+      user:'981mayankchauhan@gmail.com',
+      pass:'sfpuruhushrvjvaj'
+   }
+  });
+
+  const mailOptions = {
+    from: '981mayankchauhan@gmail.com', // Replace with your email address
+    to: email,
+    subject: 'Your Invoice ID from Logistics',
+    text: `Your Invoice ID is: ${id}. The estimated result is: ${estimateResult}`,
+  };
+
+  await transporter.sendMail(mailOptions);
+
+    res.json({ message: 'Email sent successfully!' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error sending the email.' });
+  }
+});
+ /* 
+router.post('/api/estimate', async (req, res) => {
+  const { email, length, breadth, height, multiplier,estimateResult } = req.body;
+
+  // ... code to handle the estimate data and generate the estimate ID (e.g., using MongoDB) ...
+
+  // Find the estimate document based on the provided email
+  try { const filter = { $and: [{ email }, { estimateResult }] };
+  const foundEstimate = await Estimate.findOne(filter);
+
+    if (!foundEstimate) {
+      return res.status(404).json({ error: 'No estimate found for the provided email.' });
+    }
+
+    const generatedEstimateId = foundEstimate._id;
+    const generatedEstimateResult = foundEstimate.estimateResult;
+
+    // Sample code to send the confirmation email using Nodemailer
+    const transporter = nodemailer.createTransport({
+      service: 'gmail', // Change to the email service you want to use
+      auth:{
+        user:'981mayankchauhan@gmail.com',
+        pass:'sfpuruhushrvjvaj'
+     }
+    });
+
+    const mailOptions = {
+      from: '981mayankchauhan@gmail.com', // Replace with your email address
+      to: email,
+      subject: 'Your Invoice ID from Logistics',
+      text: `Your Invoice ID is: ${generatedEstimateId}. The estimated result is: ${generatedEstimateResult}`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error('Error sending confirmation email:', error);
+        res.status(500).json({ error: 'Error sending confirmation email.' });
+      } else {
+        console.log('Confirmation email sent:', info.response);
+        res.status(200).json({ success: true, estimateId: generatedEstimateId, result:generatedEstimateResult }); // Send the generated _id as part of the response
+      }
+    });
+  } catch (error) {
+    console.error('Error finding estimate:', error);
+    res.status(500).json({ error: 'Error finding estimate.' });
+  }
+});
+ */
+
+
+ /* router.post('/api/estimate', async (req, res) => {
+  const { email, length, breadth, height, multiplier, estimateResult } = req.body;
+
+  const generatedEstimateId = req.body.generatedEstimateId; // Use the generatedEstimateId from the response
+
+  // Sample code to send the confirmation email using Nodemailer
+  const transporter = nodemailer.createTransport({
+    service: 'gmail', // Change to the email service you want to use
+    auth:{
+      user:'981mayankchauhan@gmail.com',
+      pass:'sfpuruhushrvjvaj'
+   }
+  });
+
+  const mailOptions = {
+    from: '981mayankchauhan@gmail.com', // Replace with your email address
+    to: email,
+    subject: 'Your Invoice ID from Logistics',
+    text: `Your Invoice ID is: ${generatedEstimateId}. The estimated result is: ${estimateResult}`,
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.error('Error sending confirmation email:', error);
+      res.status(500).json({ error: 'Error sending confirmation email.' });
+    } else {
+      console.log('Confirmation email sent:', info.response);
+      res.status(200).json({ success: true, estimateId: generatedEstimateId }); // Send the generated _id as part of the response
+    }
+  });
+});
+ */
+// create invoice api
 
 router.post('/invoices', async (req, res) => {
   const invoiceData = req.body;
@@ -80,6 +200,7 @@ router.post('/invoices', async (req, res) => {
   }
 });
 
+// update status of invoice api
 
 router.put('/invoices/:id/status', async (req, res) => {
   const invoiceId = req.params.id;
@@ -96,6 +217,59 @@ router.put('/invoices/:id/status', async (req, res) => {
   }
 });
 
+//updat status(good in warhouse) of estimate api
+
+router.put('/estimatesone/:id/status', async (req, res) => {
+  const estimateId = req.params.id;
+
+  try {
+    const updatedEstimate = await Estimate.findByIdAndUpdate(
+      estimateId,
+      { status: ' Goods in warehouse' },
+      { new: true }
+    );
+    res.status(200).json(updatedEstimate);
+  } catch (err) {
+    res.status(500).json({ error: 'Error updating invoice status.' });
+  }
+});
+
+//updat status(reached hub) of estimate api
+
+router.put('/estimatestwo/:id/status', async (req, res) => {
+  const estimateId = req.params.id;
+
+  try {
+    const updatedEstimate = await Estimate.findByIdAndUpdate(
+      estimateId,
+      { status: 'reached hub' },
+      { new: true }
+    );
+    res.status(200).json(updatedEstimate);
+  } catch (err) {
+    res.status(500).json({ error: 'Error updating invoice status.' });
+  }
+});
+
+//updat status(out for delivery) of estimate api
+
+router.put('/estimatesthree/:id/status', async (req, res) => {
+  const estimateId = req.params.id;
+
+  try {
+    const updatedEstimate = await Estimate.findByIdAndUpdate(
+      estimateId,
+      { status: ' out for delivery' },
+      { new: true }
+    );
+    res.status(200).json(updatedEstimate);
+  } catch (err) {
+    res.status(500).json({ error: 'Error updating invoice status.' });
+  }
+});
+
+//get all invoice api
+
 router.get('/invoices', async (req, res) => {
   try {
     const invoices = await Invoice.find(); // Retrieve all invoices from the database
@@ -104,6 +278,19 @@ router.get('/invoices', async (req, res) => {
     res.status(500).json({ error: 'Error fetching invoices from the database.' });
   }
 });
+
+//get all estimate api
+
+router.get('/estim', async (req, res) => {
+  try {
+    const estimates = await Estimate.find(); // Retrieve all invoices from the database
+    res.status(200).json(estimates);
+  } catch (err) {
+    res.status(500).json({ error: 'Error fetching invoices from the database.' });
+  }
+});
+
+//create estimate api
 
 router.post('/todos', (req, res) => {
   const todo = new Estimate(req.body);
@@ -117,6 +304,21 @@ router.post('/todos', (req, res) => {
     });
 });
 
+//tarck cestimate for indivual api
+
+router.get('/estimates/:id', async (req, res) => {
+  try {
+    const estimate = await Estimate.findById(req.params.id);
+    if (!estimate) {
+      return res.status(404).json({ error: 'Estimate not found.' });
+    } res.status(200).json(estimate);
+   // res.status(200).json({length:estimate.length,{USERID:estimate.id}});
+  } catch (err) {
+    res.status(500).json({ error: 'Error fetching the estimate from the database.' });
+  }
+});
+
+//register user api 
 
 router.post("/register", async (req, res) => {
   const salt = await bcrypt.genSalt(10);
@@ -151,6 +353,8 @@ router.post("/register", async (req, res) => {
   }
 });
 
+//login user api
+
 router.post("/login", async (req, res) => {
   const user = await User.findOne({ email: req.body.email });
 
@@ -178,6 +382,7 @@ router.post("/login", async (req, res) => {
   });
 });
 
+//get user name in profile api
 
 router.get("/user",async(req,res)=>{
   try {
@@ -201,6 +406,8 @@ res.send(data)
   }
 })
 
+//logout api
+
 router.post("/logout", (req, res) => {
   res.cookie("jwt", "", { maxAge: 0 });
 
@@ -208,5 +415,98 @@ router.post("/logout", (req, res) => {
     message: "user logout succssfully",
   });
 });
+
+
+
+router.post('/updatethreeStatus/:estimateId', async (req, res) => {
+  const estimateId = req.params.estimateId;
+
+  // Your logic to update the status based on the estimateId
+  // ...
+
+  // Fetch the user's email by ID
+  try {
+    const estimate = await Invoice.findById(estimateId).exec();
+    if (!estimate) {
+      return res.status(404).json({ error: 'Estimate not found' });
+    }
+
+    // Send the email to the user
+    const email = estimate.email; // Assuming the email field is present in the estimate object
+    await sendEmail(email);
+
+    return res.status(200).json({ message: 'Status updated, and email sent successfully' });
+  } catch (error) {
+    console.error('Error updating status and sending email:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Function to send the email using Nodemailer
+function sendEmail(email) {
+  return new Promise((resolve, reject) => {
+    const mailOptions = {
+      from: 'your-email@example.com',
+      to: email,
+      subject: 'Product Out for Delivery',
+      text: 'Your product is out for delivery.',
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error('Error sending email:', error);
+        reject(error);
+      } else {
+        console.log('Email sent:', info.response);
+        resolve(info.response);
+      }
+    });
+  });
+}
+router.post('/sendEmail/:estimateId', async (req, res) => {
+  const estimateId = req.params.estimateId;
+
+  // Fetch the user's email by ID
+  try {
+    const estimate = await Estimate.findById(estimateId).exec();
+    if (!estimate) {
+      return res.status(404).json({ error: 'Estimate not found' });
+    }
+
+    const email = estimate.email; // Assuming the email field is present in the estimate object
+
+    // Send the email to the user
+    await sendEmail(email, estimateId);
+
+    return res.status(200).json({ message: 'Email sent successfully' });
+  } catch (error) {
+    console.error('Error sending email:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Function to send the email using Nodemailer
+function sendEmail(email, estimateId) {
+  return new Promise((resolve, reject) => {
+    const mailOptions = {
+      from: '981mayankchauhan@example.com',
+      to: email,
+      subject: 'Product Out for Delivery',
+      text: `Your product with ID ${estimateId} is out for delivery.`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error('Error sending email:', error);
+        reject(error);
+      } else {
+        console.log('Email sent:', info.response);
+        resolve(info.response);
+      }
+    });
+  });
+}
+
+
 
 module.exports = router;
