@@ -5,6 +5,7 @@ const User = require("../models/user");
 const Estimate = require("../models/estimate");
 const Invoice = require("../models/invoice");
 const nodemailer = require('nodemailer')
+const Contact = require('..//models/contact');
 
 const jwtSecret = process.env.YOUR_JWT_SECRET_KEY;
 
@@ -69,32 +70,57 @@ router.post('/send-email', (req, res) => {
 });
 
 //send email on confirm estimate
-router.post('/estimate', async(req, res) => {
-  try{
-  const { id, email,length, breadth, height, multiplier, estimateResult } = req.body;
+router.post('/estimate', async (req, res) => {
+  try {
+    const { id, email, length, breadth, height, multiplier, estimateResult,actualweight } = req.body;
 
-  // ... code to handle the estimate data and generate the estimate ID (e.g., using MongoDB) ...
-  // 
-  console.log('Received Estimate Data:', req.body);
+    // ... code to handle the estimate data and generate the estimate ID (e.g., using MongoDB) ...
+    // 
+    console.log('Received Estimate Data:', req.body);
 
+    // Sample code to send the confirmation email using Nodemailer
+    const transporter = nodemailer.createTransport({
+      service: 'gmail', // Change to the email service you want to use
+      auth: {
+        user: '981mayankchauhan@gmail.com',
+        pass: 'sfpuruhushrvjvaj'
+      }
+    });
 
-  // Sample code to send the confirmation email using Nodemailer
-  const transporter = nodemailer.createTransport({
-    service: 'gmail', // Change to the email service you want to use
-    auth:{
-      user:'981mayankchauhan@gmail.com',
-      pass:'sfpuruhushrvjvaj'
-   }
-  });
+    // Create the HTML table content
+    const tableContent = `
+      <table border="1">
+      
+        <tr>
+        <th>Actual Weight</th>
+        <th>Id</th>
+          <th>Length</th>
+          <th>Breadth</th>
+          <th>Height</th>
+          <th>Multiplier</th>
+          <th>Estimate Result</th>
+        </tr>
+        
+        <tr>
+        <td>${actualweight}</td>
+        <td>${id}</td>
+          <td>${length}</td>
+          <td>${breadth}</td>
+          <td>${height}</td>
+          <td>${multiplier}</td>
+          <td>${estimateResult}</td>
+        </tr>
+      </table>
+    `;
 
-  const mailOptions = {
-    from: '981mayankchauhan@gmail.com', // Replace with your email address
-    to: email,
-    subject: 'Your Invoice ID from Logistics',
-    text: `Your Invoice ID is: ${id}. The estimated result is: ${estimateResult}`,
-  };
+    const mailOptions = {
+      from: '981mayankchauhan@gmail.com', // Replace with your email address
+      to: email,
+      subject: 'Your Invoice ID from Logistics',
+      html: `<p>Your Invoice ID is: ${id}. The estimated result is:</p>${tableContent}`,
+    };
 
-  await transporter.sendMail(mailOptions);
+    await transporter.sendMail(mailOptions);
 
     res.json({ message: 'Email sent successfully!' });
   } catch (error) {
@@ -506,6 +532,42 @@ function sendEmail(email, estimateId) {
   });
 }
 
+//conact form api
+router.post('/contact', async (req, res) => {
+  try {
+    const { fullname, email, message } = req.body;
+    const contact = new Contact({ fullname: fullname, email, message });
+    const savedContact = await contact.save();
+    res.json(savedContact);
+  } catch (error) {
+    console.error('Error saving data:', error); // Log the error details
+    res.status(500).json({ message: 'Error saving data.' });
+  }
+});
+
+//get all user complaint/contact
+router.get('/complaint/:id', async (req, res) => {
+  try {
+    const contact = await Contact.findById(req.params.id);
+    if (!contact) {
+      return res.status(404).json({ error: 'Estimate not found.' });
+    } res.status(200).json(contact);
+   // res.status(200).json({length:estimate.length,{USERID:estimate.id}});
+  } catch (err) {
+    res.status(500).json({ error: 'Error fetching the estimate from the database.' });
+  }
+});
+
+//get all complaint
+
+router.get('/comp', async (req, res) => {
+  try {
+    const contacts = await Contact.find(); // Retrieve all invoices from the database
+    res.status(200).json(contacts);
+  } catch (err) {
+    res.status(500).json({ error: 'Error fetching invoices from the database.' });
+  }
+});
 
 
 module.exports = router;
