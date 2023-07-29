@@ -1,6 +1,7 @@
 
 const mongoose = require('mongoose')
 
+
 const estimateSchema = new mongoose.Schema({
   
   email: { type: String, 
@@ -31,6 +32,17 @@ const estimateSchema = new mongoose.Schema({
         type: String,
         default: 'Received goods', // Default status is 'pending', but it will be updated to 'done' when clicked on the upload button.
       },
+    actualweight:{
+            type:Number,
+            required:true
+
+      },
+    
+      isconfirm:{
+        type:Boolean,
+        default:false
+      },
+      changeDate: { type: Date, required: true, default: Date.now }
 
 })
 

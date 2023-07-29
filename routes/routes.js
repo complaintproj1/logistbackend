@@ -246,8 +246,14 @@ router.put('/invoices/:id/status', async (req, res) => {
 
 router.put('/estimatesone/:id/status', async (req, res) => {
   const estimateId = req.params.id;
-
+  const newStatus = req.body.status;
   try {
+    estimate.previousStatus = estimate.status;
+
+    // Update the status with the new value from the request body
+    estimate.status = newStatus;
+
+
     const updatedEstimate = await Estimate.findByIdAndUpdate(
       estimateId,
       { status: ' Goods in warehouse' },
@@ -569,5 +575,31 @@ router.get('/comp', async (req, res) => {
   }
 });
 
+router.put('/reest/:id/isconfirm', async (req, res) => {
+  const generatedId = req.params.id;
 
+  try {
+    const updatedInvoice = await Estimate.findByIdAndUpdate(
+      generatedId,
+      { isconfirm: 'true' },
+      { new: true }
+    );
+    res.status(200).json(updatedInvoice);
+  } catch (err) {
+    res.status(500).json({ error: 'Error updating invoice status.' });
+  }
+});
+
+
+router.put('/estimates/:id', async (req, res) => {
+  try {
+    const estimate = await Estimate.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!estimate) {
+      return res.status(404).json({ message: 'Estimate not found' });
+    }
+    res.json(estimate);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
 module.exports = router;
