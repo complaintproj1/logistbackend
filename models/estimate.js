@@ -58,6 +58,7 @@ const estimateSchema = new mongoose.Schema({
         {
           status: String,
           timestamp: { type: Date, default: Date.now },
+          default: 'Received goods'
         },
       ]
 })

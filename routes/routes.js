@@ -267,25 +267,26 @@ router.put('/estimatesone/:id/status', async (req, res) => {
 });
 
 //updat status(reached hub) of estimate api
-
 router.put('/estimatestwo/:id/status', async (req, res) => {
   const estimateId = req.params.id;
-  const newStatus ='reached hub';
+  const newStatus = 'reached hub'; 
 
   try {
     const updatedEstimate = await Estimate.findByIdAndUpdate(
       estimateId,
-      { status:newStatus  },
+      { status: newStatus },
       { new: true }
     );
     updatedEstimate.statusHistory.push({
       status: newStatus,
       timestamp: Date.now(),
     });
+
+    // Set the color to 'green' for 'Goods in warehouse' status
     await updatedEstimate.save();
     res.status(200).json(updatedEstimate);
   } catch (err) {
-    res.status(500).json({ error: 'Error updating invoice status.' });
+    res.status(500).json({ error: 'Error updating estimate status.' });
   }
 });
 
