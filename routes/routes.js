@@ -7,7 +7,7 @@ const Invoice = require("../models/invoice");
 const nodemailer = require('nodemailer')
 const Contact = require('..//models/contact');
 
-const jwtSecret = process.env.YOUR_JWT_SECRET_KEY;
+const YOUR_JWT_SECRET_KEY = process.env.YOUR_JWT_SECRET_KEY;
 
 const multer = require('multer');
 
@@ -243,25 +243,26 @@ router.put('/invoices/:id/status', async (req, res) => {
 });
 
 //updat status(good in warhouse) of estimate api
-
 router.put('/estimatesone/:id/status', async (req, res) => {
   const estimateId = req.params.id;
-  const newStatus = req.body.status;
+  const newStatus = 'Goods in warehouse'; 
+
   try {
-    estimate.previousStatus = estimate.status;
-
-    // Update the status with the new value from the request body
-    estimate.status = newStatus;
-
-
     const updatedEstimate = await Estimate.findByIdAndUpdate(
       estimateId,
-      { status: ' Goods in warehouse' },
+      { status: newStatus },
       { new: true }
     );
+    updatedEstimate.statusHistory.push({
+      status: newStatus,
+      timestamp: Date.now(),
+    });
+
+    // Set the color to 'green' for 'Goods in warehouse' status
+    await updatedEstimate.save();
     res.status(200).json(updatedEstimate);
   } catch (err) {
-    res.status(500).json({ error: 'Error updating invoice status.' });
+    res.status(500).json({ error: 'Error updating estimate status.' });
   }
 });
 
@@ -269,13 +270,19 @@ router.put('/estimatesone/:id/status', async (req, res) => {
 
 router.put('/estimatestwo/:id/status', async (req, res) => {
   const estimateId = req.params.id;
+  const newStatus ='reached hub';
 
   try {
     const updatedEstimate = await Estimate.findByIdAndUpdate(
       estimateId,
-      { status: 'reached hub' },
+      { status:newStatus  },
       { new: true }
     );
+    updatedEstimate.statusHistory.push({
+      status: newStatus,
+      timestamp: Date.now(),
+    });
+    await updatedEstimate.save();
     res.status(200).json(updatedEstimate);
   } catch (err) {
     res.status(500).json({ error: 'Error updating invoice status.' });
@@ -286,13 +293,18 @@ router.put('/estimatestwo/:id/status', async (req, res) => {
 
 router.put('/estimatesthree/:id/status', async (req, res) => {
   const estimateId = req.params.id;
-
+  const newStatus =' out for delivery';
   try {
     const updatedEstimate = await Estimate.findByIdAndUpdate(
       estimateId,
-      { status: ' out for delivery' },
+      { status: newStatus },
       { new: true }
-    );
+    );updatedEstimate.statusHistory.push({
+      status: newStatus,
+      timestamp: Date.now(),
+    });
+    await updatedEstimate.save();
+    
     res.status(200).json(updatedEstimate);
   } catch (err) {
     res.status(500).json({ error: 'Error updating invoice status.' });

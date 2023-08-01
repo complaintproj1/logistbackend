@@ -3,7 +3,7 @@ const express = require('express')
 
 const dotenv = require('dotenv')
 const PORT = process.env.PORT || 8000
-const jwtSecret = process.env.YOUR_JWT_SECRET_KEY;
+const YOUR_JWT_SECRET_KEY = process.env.YOUR_JWT_SECRET_KEY;
 const mongoose = require('mongoose');
 mongoose.set('strictQuery', true);
 

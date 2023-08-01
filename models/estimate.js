@@ -42,8 +42,24 @@ const estimateSchema = new mongoose.Schema({
         type:Boolean,
         default:false
       },
-      changeDate: { type: Date, required: true, default: Date.now }
-
+      boxes:{
+        type:Number,
+        default:1
+      },
+      price:{
+        type:Number,
+        required:true
+      },
+      color: {
+        type: String,
+        default: 'crimson'
+      },
+      statusHistory: [
+        {
+          status: String,
+          timestamp: { type: Date, default: Date.now },
+        },
+      ]
 })
 
 module.exports = mongoose.model('Estimate', estimateSchema)
