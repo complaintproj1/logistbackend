@@ -56,10 +56,9 @@ const estimateSchema = new mongoose.Schema({
       },
       statusHistory: [
         {
-          status: String,
-          timestamp: { type: Date, default: Date.now },
-          default: 'Received goods'
-        },
+          status: { type: String, default: 'Received goods' },
+          timestamp: { type: Date, default: Date.now }
+        }
       ]
 })
 
